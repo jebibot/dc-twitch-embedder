@@ -1,0 +1,19 @@
+{
+  "name": "DC Twitch Clip Embdder",
+  "description": "디시인사이드 게시글에 트위치 클립을 삽입합니다.",
+  "version": "1.1",
+  "manifest_version": 2,
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://gall.dcinside.com/_editor/pages/trex/multimedia.html*"],
+      "js": ["multimedia.js"]
+    }
+  ],
+  "web_accessible_resources": ["multimedia-embed.js"]
+}
