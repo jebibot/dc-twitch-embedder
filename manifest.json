@@ -9,10 +9,21 @@
     "48": "icon-48.png",
     "128": "icon-128.png"
   },
+  "permissions": [
+    "https://clips-media-assets2.twitch.tv/"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": ["https://gall.dcinside.com/_editor/pages/trex/multimedia.html*"],
       "js": ["multimedia.js"]
+    },
+    {
+      "matches": ["https://gall.dcinside.com/upload/movie*"],
+      "js": ["movie.js"]
     }
   ],
   "web_accessible_resources": ["multimedia-embed.js"]
