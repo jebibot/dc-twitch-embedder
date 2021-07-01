@@ -24,8 +24,8 @@ twitchClipButton.addEventListener('click', () => {
   const clipId = parts[parts.length - 1].split('?')[0];
 
   chrome.runtime.sendMessage({clipId}, response => {
-    if (response.error || !response.result) {
-      alert(response.error || '오류');
+    if (chrome.runtime.lastError || !response || response.error || !response.result) {
+      alert(chrome.runtime.lastError || response?.error || '오류');
     }
     fetch(response.result)
       .then(response => response.blob())
@@ -55,9 +55,7 @@ twitchClipButton.addEventListener('click', () => {
         injectScript(`window.opener.insert_movie('<div class="dc_movie_thumbox${result.thumbox}" ${style_html}><img class="dc_mv" src="${result.thum_url}" id="tx_movie_${result.file_no}"/></div>', ${result.file_no});
 closeWindow();`);
       })
-      .catch(error => {
-        alert(error.message || error);
-      });
+      .catch(error => alert(error.message));
   });
 });
 
