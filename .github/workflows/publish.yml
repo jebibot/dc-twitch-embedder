@@ -1,0 +1,60 @@
+name: "Publish"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The argument to yarn version'
+        default: 'patch'
+        required: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment: publish
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: yarn-deps-v1-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            yarn-deps-v1-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Increment version
+        run: yarn version --no-git-tag-version --${{ github.event.inputs.version }}
+
+      - name: Push and tag version
+        run: |
+          VERSION=$(jq -r ".version" package.json)
+          git config user.name "Jebibot"
+          git config user.email "83044352+jebibot@users.noreply.github.com"
+          git add *.json
+          git commit -m "v$VERSION"
+          git tag -a "v$VERSION" -m "v$VERSION"
+          git push --follow-tags
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish extension
+        run: yarn run publish
+        env:
+          CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          EXTENSION_ID: ${{ secrets.CHROME_APP_ID }}

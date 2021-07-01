@@ -7,11 +7,14 @@
   "license": "MIT",
   "devDependencies": {
     "axios": "^0.21.1",
+    "chrome-webstore-upload-cli": "^1.2.1",
     "jest": "^27.0.6"
   },
   "scripts": {
     "test": "jest",
     "build": "zip extension.zip *.js *.png manifest.json",
-    "postversion": "manifest=\"$(jq \".version = `jq '.version' package.json`\" manifest.json)\" && echo \"$manifest\" > manifest.json"
-  }
+    "postversion": "manifest=\"$(jq \".version = `jq '.version' package.json`\" manifest.json)\" && echo \"$manifest\" > manifest.json",
+    "publish": "webstore upload --source=extension.zip --auto-publish"
+  },
+  "private": true
 }
