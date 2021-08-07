@@ -127,10 +127,12 @@ test("upload/movie", async () => {
 				        location.reload();				        
 			        } else {
 				        var style_html='';
+				        
 				        if(response.thumbox == ''){
-				        	if(response.height >= '640') {
+				        	/*if(response.height >= '640') {
 					        	style_html = 'style = \\"height:'+response.height+'px;\\"';
-				        	}
+				        	}*/
+				        	style_html = 'style = \\"height:'+response.height+'px;width:'+response.width+'px;\\"';
 				        }
 		        		_opener.insert_movie('<div class=\\"dc_movie_thumbox'+response.thumbox+'\\" ' + style_html + '><img class=\\"dc_mv\\" src=\\"'+response.thum_url+'\\" id=\\"tx_movie_'+ response.file_no +'\\"/></div>' , response.file_no);
 		            	closeWindow();

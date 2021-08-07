@@ -51,7 +51,7 @@ twitchClipButton.addEventListener('click', () => {
       .then(response => response.json())
       .then(result => {
         if (result.msg) throw new Error(result.msg);
-        const style_html = !result.thumbox && result.height >= 640 ? `style = "height:${result.height}px;"` : '';
+        const style_html = !result.thumbox && result.height >= 640 ? `style = "height:${result.height}px;width:${result.width}px;"` : '';
         injectScript(`window.opener.insert_movie('<div class="dc_movie_thumbox${result.thumbox}" ${style_html}><img class="dc_mv" src="${result.thum_url}" id="tx_movie_${result.file_no}"/></div>', ${result.file_no});
 closeWindow();`);
       })
