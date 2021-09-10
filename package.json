@@ -8,7 +8,7 @@
   "devDependencies": {
     "axios": "^0.21.4",
     "chrome-webstore-upload-cli": "^1.2.1",
-    "jest": "^27.1.0"
+    "jest": "^27.1.1"
   },
   "scripts": {
     "test": "jest",
