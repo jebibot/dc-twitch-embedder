@@ -14,7 +14,7 @@
     "test": "jest",
     "build": "zip extension.zip *.js *.png manifest.json",
     "postversion": "manifest=\"$(jq \".version = `jq '.version' package.json`\" manifest.json)\" && echo \"$manifest\" > manifest.json",
-    "publish": "webstore upload --source=extension.zip --auto-publish"
+    "publish": "chrome-webstore-upload upload --source=extension.zip --auto-publish"
   },
   "private": true
 }
