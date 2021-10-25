@@ -43,10 +43,12 @@ test("upload/movie", async () => {
 	<script src=\\"https://nstatic.dcinside.com/dgn/gallery/js/jquery-3.2.1.min.js\\"></script>
 	<!-- <![endif]-->
 	<script type=\\"text/javascript\\" src=\\"/_editor/js/popup.js\\"></script>
-	
-		<script type=\\"text/javascript\\">
+	<script type=\\"text/javascript\\" src=\\"/_js/jquery/jquery.tmpl.min.js\\"></script>
+	<script type=\\"text/javascript\\" src=\\"/_js/ctr_cookie.min.js\\"></script>
+	<script type=\\"text/javascript\\">
 		document.domain=\\"dcinside.com\\";
 		var _opener = PopupUtil.getOpener();
+		var url_host = location.host;
 		
 		const file_cnt = window.opener.m_file_cnt;
 		const file_size = window.opener.m_file_size;
@@ -73,7 +75,7 @@ test("upload/movie", async () => {
 			
 		});
 
-		
+		var result_data = [];
 		function changeValue(obj) {		
 			var data = new FormData();
 			var objFile = null;
@@ -111,9 +113,17 @@ test("upload/movie", async () => {
 		    upload_ing = true;
 		    process_xhr();
 
+		    var movie_d_y  = get_cookie('movie_d_y');
+        	if(movie_d_y != \\"\\") {
+            	if(movie_d_y == '1') $(\\"input:radio[id='download_y']\\").prop(\\"checked\\", true);
+            	else $(\\"input:radio[id='download_n']\\").prop(\\"checked\\", true);
+        	} else {
+				$(\\"input:radio[id='download_y']\\").prop(\\"checked\\", true);
+        	}
+
 		    //Sending it with ajax
 		    $.ajax({
-		        url : \\"https://m4up1.dcinside.com/movie_upload.php\\",
+		        url : \\"https://m4up1.dcinside.com/movie_upload_v1.php\\",
 		        data: data,
 		        cache: false,
 		        contentType: false,
@@ -126,16 +136,19 @@ test("upload/movie", async () => {
 				        alert(response.msg);
 				        location.reload();				        
 			        } else {
-				        var style_html='';
-				        
-				        if(response.thumbox == ''){
-				        	/*if(response.height >= '640') {
-					        	style_html = 'style = \\"height:'+response.height+'px;\\"';
-				        	}*/
-				        	style_html = 'style = \\"height:'+response.height+'px;width:'+response.width+'px;\\"';
-				        }
-		        		_opener.insert_movie('<div class=\\"dc_movie_thumbox'+response.thumbox+'\\" ' + style_html + '><img class=\\"dc_mv\\" src=\\"'+response.thum_url+'\\" id=\\"tx_movie_'+ response.file_no +'\\"/></div>' , response.file_no);
-		            	closeWindow();
+			        	result_data = response;
+						for(var i=0; i < 6; i++) {
+							
+							if(response.thum_url_arr[i] != '' &&  response.thum_url_arr[i] != undefined) {
+								console.log($('.vdo_thumlist > ul').children().eq(0));
+								console.log($('.vdo_thumlist > ul').children().eq(0).children('a'));
+								$('.vdo_thumlist > ul').children().eq(i).children('a').html('<img src=\\"'+response.thum_url_arr[i]+'\\">');
+							} else {
+								$('.vdo_thumlist > ul').children().eq(i).children('a').html('<img src=\\"\\">');
+							}
+						}
+		        		
+		            	$('.vdo_thumlist ul').children().first().click();
 			        }
 					
 		        },
@@ -149,13 +162,7 @@ test("upload/movie", async () => {
 									xhr.abort();
 									location.reload();
 								}
-							}
-							
-		                    file.progressDone = e.position || e.loaded;
-		                    file.progressTotal = e.totalSize || e.total;
-							var per = (file.progressDone / file.progressTotal) * 100;
-							$(\\"#progress_bar_cur_per\\").css(\\"width\\",per+\\"%\\");
-							$(\\"#progress_bar_cur_per_txt\\").text(Math.round(per)+\\"%\\");
+							}							
 		                };
 		            }
 
@@ -165,22 +172,24 @@ test("upload/movie", async () => {
 		}
 
 		function process_xhr() {
-			$(\\"#btn_video_up\\").hide();
-			$(\\"#div_basicbox\\").hide();
-			$('.file_txtinfo').hide();
-			$(\\"#btn_video_up_cancel\\").show();
-			$(\\"#div_statusbox\\").show();
-			popup_resize();
+			//$('#movie_tmpl').tmpl().appendTo('body');
+        	$('.moviecast').hide();
+        	$('#movie_tmp').show();
+        	popup_resize('#movie_tmp');	
 		}
 
-		function popup_resize() {
+		function popup_resize(cl) {
+			var cl = cl;
 			$('#file_cnt').text(file_cnt);
 			$('#file_size').text(file_size);
 			file_chk();
 			if(window.outerWidth && window.innerWidth ) {
-				window.resizeTo( $('.pop_wrap').width() + (window.outerWidth - window.innerWidth) + 2, $('.pop_wrap').height() + (window.outerHeight - window.innerHeight) + 3);
+				window.resizeTo( $(cl).width() + (window.outerWidth - window.innerWidth) + 2, $(cl).height() + (window.outerHeight - window.innerHeight) + 3);
 			}
-			autoResizeHeight($tx(\\"pop_wrap\\"));
+			autoResizeHeight($tx(cl));
+
+			var _embeder = getEmbeder('media');
+			window.execEmbed = _embeder.embedHandler;
 		}
 
 		function file_chk() {
@@ -200,10 +209,148 @@ test("upload/movie", async () => {
 				return false;
 			}
 		}
+
+		function regist_movie() {
+			if (!_opener) {
+		        alert('잘못된 경로로 접근하셨습니다.');
+		        return;
+		    }
+			if(result_data.length <= 0) {
+				alert('업로드 중입니다.');
+				return false;
+			}
+			var thum_url = encodeURIComponent($('.vdo_thumsel img').attr('src'));
+			var movie_comment = $.trim($('#movie_comment').val());
+			var download_y = ($('input:radio[id=download_y]').is(':checked')) ? '1' : '0'
+			var tags = []
+			for(var i=0; i < 5; i++) {
+				if($('#movie_tag_' + i).val() == '' || $('#movie_tag_' + i).val() == undefined) {
+					continue;
+				} else {
+					console.log(tags);
+					if (tags.indexOf($('#movie_tag_' + i).val()) != -1) {
+						alert('이미 등록된 태그입니다.');
+						$('#movie_tag_' + i).focus();
+						return false;
+					}
+
+					if(!word_filter($('#movie_tag_' + i).val())) {
+						alert('태그에 특수문자 및 공백은 사용 불가능합니다.');
+						$('#movie_tag_' + i).focus();
+						return false;
+					}
+					
+					tags.push($('#movie_tag_' + i).val());
+				}
+			}
+			console.log(tags);
+			
+			var gallery_id = _opener.document.getElementById(\\"id\\").value;
+			var movie_data = { 'gallery_id': gallery_id
+	  				  ,'thum_url': thum_url
+	  				  ,'movie_comment': movie_comment
+	  				  ,'download_y': download_y
+	  				  ,'tags': tags
+	  				  ,'file_no': result_data.file_no
+	  				  ,'_GALLTYPE_' : _GALLTYPE_
+		  	};
+			$.ajax({
+				type: \\"POST\\",
+				url: \\"/ajax/movie_ajax/regist_movie\\",
+				data: movie_data,
+				dataType : 'json',
+				cache : false,
+				async : false,
+				success: function(ajaxData) {
+					if(ajaxData.result == \\"success\\") {
+						if(typeof(ajaxData.msg) != 'undefined' && ajaxData.msg) {
+							set_cookie('movie_d_y', download_y, 365, \\"dcinside.com\\");
+							movieIdx_arr.push([result_data.file_no,ajaxData.no]);
+							done(ajaxData);
+						}
+					} else {
+						if(typeof(ajaxData.msg) != 'undefined' && ajaxData.msg) {
+							alert(ajaxData.msg);
+						}
+					}
+				}
+			});
+		}
+
+		
+		function done(data) {
+			
+			var url ='https://'+url_host+'/board/movie/movie?no='+data.no;
+			var _data = { code: '<iframe src=\\"'+url+'\\" name=\\"movieIcon\\" id=\\"movieIcon'+data.no+'\\" frameborder=\\"0\\" style=\\"display:block; width:100vw; height: 100vh\\"></iframe>'
+				};
+
+			if (typeof(execEmbed) == 'undefined') { //Virtual Function
+		        return;
+		    }
+			window.opener.movieIdx_arr = movieIdx_arr;
+			execEmbed(_data);
+			window.close();
+		}
+
+		// 한글, 영어, 숫자 제거 함수 - 제거후 남는 단어가 있으면 false, 없으면 true
+		var word_filter = function (str) {
+			//console.log(str);
+			var k_pattern = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+			var e_pattern = /[a-zA-Z]/;
+			var n_pattern = /[0-9]/;
+			var remain = \\"\\";
+
+			var blank_pattern = /[\\\\s]/g;
+			if( blank_pattern.test(str) == true){
+			    return false;
+			}
+			
+			for (var i=0; i<str.length; i++) {
+				var temp = str[i];
+
+				temp = $.trim(temp).replace(k_pattern, '');
+				temp = temp.replace(e_pattern, '');
+				temp = temp.replace(n_pattern, '');
+
+				if (temp.length > 0) {
+					remain += temp;
+				}
+			}
+			//console.log(remain.length);
+			if (remain.length > 0) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		$(document).on(\\"click\\", \\".vdo_thumlist ul li\\", function (e) { 
+			var img_src = $(this).find('img').attr('src');
+			$('.vdo_thumsel').html('<img src=\\"' + img_src + '\\">');
+			//$('.vdo_thumsel img').attr('src',img_src);
+			$('.vdo_thumlist ul li').removeClass('sel');
+			$(this).addClass('sel');
+		});
+
+		$(document).on(\\"keyup\\", \\".tags\\", function (e) { 
+			var input_el = $('.tags');
+			input_el.val().replace(\\" \\",\\"\\");
+			input_el.keyup(function(event) {
+				if($(this).val() != '') {
+					$(this).siblings().show();
+				} else {
+					$(this).siblings().hide();
+				}
+			});
+		});
+
+		$(document).on(\\"click\\", \\".tag_x > button\\", function (e) { 
+			$(this).parents('.taginput').children('.tags').val('');
+		});
 		
 	</script>	
 </head>
-<body onload = \\"popup_resize();\\" >
+<body onload = \\"popup_resize('.moviecast');\\" >
 <div class=\\"pop_wrap file moviecast\\" >
 	<div class=\\"pop_content \\">
 		<div class=\\"pop_head\\">
@@ -218,22 +365,10 @@ test("upload/movie", async () => {
 					<p class=\\"basicstxt\\">업로드할 파일을 선택해주세요.(최대 50MB)</p>
 				</div>
 				<!-- //basicbox -->
-				<!-- statusbox -->
-				<div class=\\"statusbox\\" id = \\"div_statusbox\\" style=\\"display:none\\">
-					<p class=\\"statustxt\\">동영상 업로드 중</p>
-					<div class=\\"loding_box clear\\">
-						<div class=\\"loding_progress\\">
-							<div class=\\"loding_bar\\" id =\\"progress_bar_cur_per\\" style=\\"width:0%\\"></div>
-						</div>
-						<span class=\\"loding_caunt fr\\" id = \\"progress_bar_cur_per_txt\\">0%</span>
-					</div>
-				</div>
-          		<!-- //statusbox -->
 				<form id=\\"uploadForm\\">
 					<input type=\\"file\\" id=\\"file\\" name=\\"avatar\\" onchange=\\"changeValue(this)\\" style=\\"display:none\\"  accept=\\".avi, .asf, .mov, .wmv, .mp4, .mpeg, .webm\\">
 				</form>
 				<button class=\\"btn_blue small\\" id=\\"btn_video_up\\" >동영상 파일 선택</button>
-				<button class=\\"btn_blue small\\" id=\\"btn_video_up_cancel\\" style=\\"display:none\\">업로드 취소</button>
 			</div>
 		</div>
 	</div>
@@ -245,6 +380,84 @@ test("upload/movie", async () => {
     </div>
   </div>
 </div>
+<div class=\\"pop_wrap file\\" id = \\"movie_tmp\\" style=\\"display:none;\\">
+	<div class=\\"pop_content videoup\\">
+		<div class=\\"pop_head\\">
+		<h2>동영상 등록</h2>
+		</div>
+		<div class=\\"content_box\\">
+			<div class=\\"vdo_thumbox clear\\">
+				<div class=\\"vdo_thumsel\\">
+					<div class=\\"loading-box\\">
+		                <div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+		            </div>
+				</div>
+				<div class=\\"vdo_thumlist\\">
+					<ul class=\\"clear\\">
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>
+						<li><a href=\\"javascript:;\\"><div class=\\"loading-box\\"><div class=\\"dc-spinner\\"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div></a></li>					
+					</ul>
+				</div>
+			</div>
+			<div class=\\"vdo_formbox\\">
+				<div class=\\"box txtin clear\\">
+					<div class=\\"con_tit fl\\">설명</div>
+					<div class=\\"fl con_inr\\">
+						<textarea placeholder=\\"동영상에 대한 설명을 입력해 주세요.(최대 200자)\\" id = \\"movie_comment\\" maxlength=\\"200\\"></textarea>
+					</div>
+				</div>
+				<div class=\\"box tag clear\\">
+					<div class=\\"con_tit fl\\">태그</div>
+					<div class=\\"fl con_inr clear\\">
+						<div class=\\"taginput\\">
+							<input type=\\"text\\" id = \\"movie_tag_0\\" class=\\"tags\\" maxlength=\\"10\\">
+							<div class = \\"tag_x\\" style=\\"display:none;\\"><button class=\\"del sp_img\\" type=\\"button\\"><span class=\\"blind\\">닫기</span></button></div>
+						</div>
+						<div class=\\"taginput\\">
+							<input type=\\"text\\" id = \\"movie_tag_1\\" class=\\"tags\\" maxlength=\\"10\\">
+							<div class = \\"tag_x\\" style=\\"display:none;\\"><button class=\\"del sp_img\\" type=\\"button\\"><span class=\\"blind\\">닫기</span></button></div>	
+						</div>
+						<div class=\\"taginput\\">
+							<input type=\\"text\\" id = \\"movie_tag_2\\" class=\\"tags\\" maxlength=\\"10\\">
+							<div class = \\"tag_x\\" style=\\"display:none;\\"><button class=\\"del sp_img\\" type=\\"button\\"><span class=\\"blind\\">닫기</span></button></div>
+						</div>
+							<div class=\\"taginput\\">
+							<input type=\\"text\\" id = \\"movie_tag_3\\" class=\\"tags\\" maxlength=\\"10\\">
+							<div class = \\"tag_x\\" style=\\"display:none;\\"><button class=\\"del sp_img\\" type=\\"button\\"><span class=\\"blind\\">닫기</span></button></div>
+						</div>
+						<div class=\\"taginput\\">
+							<input type=\\"text\\" id = \\"movie_tag_4\\" class=\\"tags\\" maxlength=\\"10\\">
+							<div class = \\"tag_x\\" style=\\"display:none;\\"><button class=\\"del sp_img\\" type=\\"button\\"><span class=\\"blind\\">닫기</span></button></div>
+						</div>
+					</div>
+				</div>
+				<div class=\\"box downset clear\\">
+					<div class=\\"con_tit fl\\">다운로드</div>
+					<div class=\\"fl con_inr\\">
+						<span class=\\"radiobox small\\">
+							<input type=\\"radio\\" id=\\"download_y\\" name=\\"yn\\">
+							<em class=\\"checkmark\\"></em>
+							<label for=\\"t1\\">허용</label>
+						</span>
+						<span class=\\"radiobox small\\">
+							<input type=\\"radio\\" id=\\"download_n\\" name=\\"yn\\">
+							<em class=\\"checkmark\\"></em>
+							<label for=\\"t2\\">불가</label>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class=\\"btn_box\\">
+			<button type=\\"button\\" class=\\"btn_blue small\\"  onclick=\\"regist_movie();\\">등록</button>
+		</div>
+	</div>
+</div>
+
 </body>
 </html>
 "

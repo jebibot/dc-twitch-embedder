@@ -23,6 +23,9 @@ twitchClipButton.addEventListener('click', () => {
   const parts = url.split('/');
   const clipId = parts[parts.length - 1].split('?')[0];
 
+  document.getElementById('movie_comment').value = `https://clips.twitch.tv/${clipId}`;
+  injectScript(`upload_ing = true;process_xhr();`);
+
   chrome.runtime.sendMessage({clipId}, response => {
     if (chrome.runtime.lastError || !response || response.error || !response.result) {
       alert(chrome.runtime.lastError || response?.error || '오류');
@@ -40,7 +43,7 @@ twitchClipButton.addEventListener('click', () => {
         data.append('id', id);
         data.append('r_key', r_key);
 
-        return fetch('https://m4up1.dcinside.com/movie_upload.php', {
+        return fetch('https://m4up1.dcinside.com/movie_upload_v1.php', {
           method: 'POST',
           body: data,
           headers: {
@@ -51,13 +54,11 @@ twitchClipButton.addEventListener('click', () => {
       .then(response => response.json())
       .then(result => {
         if (result.msg) throw new Error(result.msg);
-        const style_html = !result.thumbox && result.height >= 640 ? `style = "height:${result.height}px;width:${result.width}px;"` : '';
-        injectScript(`window.opener.insert_movie('<div class="dc_movie_thumbox${result.thumbox}" ${style_html}><img class="dc_mv" src="${result.thum_url}" id="tx_movie_${result.file_no}"/></div>', ${result.file_no});
-closeWindow();`);
+        injectScript(`result_data=${JSON.stringify(result)};${[0, 1, 2, 3, 4, 5].map(i => `$('.vdo_thumlist > ul').children().eq(${i}).children('a').html('<img src="${result.thum_url_arr[i] || ''}">');`).join('')}$('.vdo_thumlist ul').children().first().click();`);
       })
       .catch(error => alert(error.message));
   });
 });
 
-const cancelButton = document.getElementById('btn_video_up_cancel');
-cancelButton.parentNode.insertBefore(twitchClipButton, cancelButton);
+const cancelButton = document.getElementById('btn_video_up');
+cancelButton.parentNode.appendChild(twitchClipButton);
