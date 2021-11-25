@@ -252,6 +252,8 @@ test("upload/movie", async () => {
 	  				  ,'download_y': download_y
 	  				  ,'tags': tags
 	  				  ,'file_no': result_data.file_no
+	  				  ,'o_width': result_data.o_width
+	  				  ,'o_height': result_data.o_height
 	  				  ,'_GALLTYPE_' : _GALLTYPE_
 		  	};
 			$.ajax({
@@ -374,8 +376,10 @@ test("upload/movie", async () => {
 	</div>
     <div class=\\"file_txtinfo bg\\">
         <p>동영상은 MP4, AVI, MOV, WEBM 등의 형식으로 개당 <span id ='file_size'></span>MB, <span id ='file_cnt'></span>개까지 업로드 가능합니다.</p>
-        <p class=\\"font_red\\">개인정보침해, 저작권 침해, 명예훼손, 청소년 유해매체, 불법 유해정보 등을<br>
-          <em></em>게시할 경우 <a href=\\"https://nstatic.dcinside.com/dc/w/policy/policy_index.html\\" target=\\"_blank\\" class=\\"font_lightblue\\">[이용약관]</a> 및 관련 법률에 의해 제재를 받을 수 있습니다.
+        <p class=\\"deco\\"><span class=\\"font_red\\">개인정보 침해, 저작권 침해, 명예훼손, 청소년 유해 매체, 불법 유해 정보 등을</span> 게시할 경우
+          <a href=\\"https://nstatic.dcinside.com/dc/w/policy/policy_index.html\\" target=\\"_blank\\" class=\\"font_lightblue\\">[이용약관]</a> 및 관련 법률에 의해 제재를 받을 수 있습니다.
+        </p>
+        <p class=\\"deco\\"><span class=\\"font_red\\">불법촬영물 등을</span> 게시할 경우 <a href=\\"https://www.law.go.kr/법령/전기통신사업법/(20211019,18477,20211019)/제22조의5\\" target=\\"_blank\\" class=\\"font_lightblue\\">[전기통신사업법 제22조의5 제1항]</a>에 따라 게시물 삭제 등의 조치가 취해질 수 있으며, 관련 법률에 의거하여 처벌받을 수 있습니다.
         </p>
     </div>
   </div>
