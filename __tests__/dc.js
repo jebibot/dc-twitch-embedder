@@ -23,10 +23,10 @@ test("upload/movie", async () => {
 	<meta property=\\"og:url\\" content=\\"https://www.dcinside.com/\\">
 	<title>동영상 등록</title>
 	<link rel=\\"shortcut icon\\" href=\\"https://nstatic.dcinside.com/dc/w/images/logo_icon.ico\\" />
-	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/reset.css\\"/>
-	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/common.css?10\\"/>
-	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/popup.css?11\\"/>
-	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"//nstatic.dcinside.com/dc/w/css/editor.css\\"/>
+	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/reset.css?v=2\\"/>
+	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/common.css?v=2\\"/>
+	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/popup.css?12\\"/>
+	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"//nstatic.dcinside.com/dc/w/css/editor.css?v=2\\"/>
 	<script type=\\"text/javascript\\" src=\\"https://nstatic.dcinside.com/dc/w/js/html5shiv.min.js\\"></script>
 	<link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"https://nstatic.dcinside.com/dc/w/css/dark.css\\"/>
 		<!--[if IE 7]>
