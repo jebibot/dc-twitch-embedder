@@ -11,8 +11,16 @@ chrome.runtime.onMessage.addListener(
         .then(response => response.json())
         .then(result => fetch(result.thumbnails.small.replace(/-preview.*/, '.mp4')))
         .then(response => response.blob())
-        .then(blob => sendResponse({result: URL.createObjectURL(blob)}))
-        .catch(error => sendResponse({error}));
+        .then(blob => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(blob);
+          });
+        })
+        .then(result => sendResponse({result}))
+        .catch(error => sendResponse({error: error.message || error}));
       return true;
     }
   });

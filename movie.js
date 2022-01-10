@@ -1,9 +1,3 @@
-function injectScript(code) {
-  const s = document.createElement('script');
-  s.innerHTML = code;
-  document.body.appendChild(s);
-}
-
 const _opener = window.opener;
 const file_size = _opener.m_file_size;
 const _GALLTYPE_ = _opener.document.getElementById('_GALLTYPE_').value;
@@ -24,11 +18,14 @@ twitchClipButton.addEventListener('click', () => {
   const clipId = parts[parts.length - 1].split('?')[0];
 
   document.getElementById('movie_comment').value = `https://clips.twitch.tv/${clipId}`;
-  injectScript(`upload_ing = true;process_xhr();`);
+  const s = document.createElement('script');
+  s.src = chrome.runtime.getURL('movie-embed.js');
+  document.body.appendChild(s);
 
   chrome.runtime.sendMessage({clipId}, response => {
     if (chrome.runtime.lastError || !response || response.error || !response.result) {
       alert(chrome.runtime.lastError || response?.error || '오류');
+      return;
     }
     fetch(response.result)
       .then(response => response.blob())
@@ -54,7 +51,7 @@ twitchClipButton.addEventListener('click', () => {
       .then(response => response.json())
       .then(result => {
         if (result.msg) throw new Error(result.msg);
-        injectScript(`result_data=${JSON.stringify(result)};${[0, 1, 2, 3, 4, 5].map(i => `$('.vdo_thumlist > ul').children().eq(${i}).children('a').html('<img src="${result.thum_url_arr[i] || ''}">');`).join('')}$('.vdo_thumlist ul').children().first().click();`);
+        window.postMessage(result, location.origin);
       })
       .catch(error => alert(error.message));
   });
