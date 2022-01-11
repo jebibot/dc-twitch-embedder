@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "zip extension.zip *.js *.png manifest.json",
+    "build": "zip extension.zip *.js *.png manifest.json rules.json",
     "postversion": "manifest=\"$(jq \".version = `jq '.version' package.json`\" manifest.json)\" && echo \"$manifest\" > manifest.json",
     "publish": "chrome-webstore-upload upload --source=extension.zip --auto-publish"
   },
