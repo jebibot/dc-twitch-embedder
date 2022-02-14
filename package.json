@@ -6,7 +6,7 @@
   "author": "Jebibot",
   "license": "MIT",
   "devDependencies": {
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "chrome-webstore-upload-cli": "^2.0.1",
     "jest": "^27.5.0"
   },
